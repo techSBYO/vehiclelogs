@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fleet Dashboard</title><script src="https://cdn.tailwindcss.com"></script>
+<style>body{background:#f5f7fb}.fade{animation:f .35s ease both}@keyframes f{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}</style>
+</head>
+<body class="min-h-screen text-slate-900">
+<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+<header class="mb-7 flex flex-wrap items-center justify-between gap-4">
+<div><p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Department Head</p><h1 class="text-3xl font-bold">Fleet Dashboard</h1><p class="mt-1 text-sm text-slate-500">Monitoring kendaraan dan log perjalanan.</p></div>
+<button onclick="loadDashboard()" class="rounded-2xl bg-white px-4 py-3 text-sm font-semibold shadow-sm">↻ Refresh</button>
+</header>
+<div id="message"></div>
+<section id="kpis" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"></section>
+<section class="mt-6 grid gap-6 lg:grid-cols-2">
+<div class="rounded-3xl bg-white p-5 shadow-sm"><div class="mb-4 flex justify-between"><h2 class="text-lg font-bold">Vehicle Status</h2><span class="text-xs text-slate-400">Live</span></div><div id="vehicles" class="space-y-3"></div></div>
+<div class="rounded-3xl bg-white p-5 shadow-sm"><h2 class="mb-4 text-lg font-bold">Today's Summary</h2><div id="today" class="space-y-3"></div></div>
+</section>
+<section class="mt-6 rounded-3xl bg-white p-5 shadow-sm"><div class="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 class="text-lg font-bold">Recent Trip Logs</h2><input id="search" oninput="filterTrips()" placeholder="Cari driver / kendaraan..." class="rounded-2xl border border-slate-200 px-4 py-2 text-sm"></div>
+<div class="overflow-x-auto"><table class="min-w-full text-left text-sm"><thead><tr class="border-b text-xs uppercase text-slate-400"><th class="px-3 py-3">Date</th><th class="px-3 py-3">Vehicle</th><th class="px-3 py-3">Driver</th><th class="px-3 py-3">Destination</th><th class="px-3 py-3">Distance</th><th class="px-3 py-3">Fuel Cost</th></tr></thead><tbody id="trips"></tbody></table></div></section>
+</div>
+<script src="config.js"></script><script>
+const API_URL=window.FLEET_CONFIG?.API_URL||"";let allTrips=[];
+function money(n){return new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(Number(n)||0)}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+async function get(action){const r=await fetch(`${API_URL}?action=${action}`);return r.json()}
+async function loadDashboard(){try{const r=await get("dashboard");if(!r.ok)throw Error(r.message);render(r)}catch(e){document.querySelector("#message").innerHTML=`<div class="mb-5 rounded-2xl bg-red-50 p-4 text-red-700">${esc(e.message)}</div>`}}
+function render(r){
+ const s=r.summary;document.querySelector("#kpis").innerHTML=[
+ ["Total Vehicles",s.total_vehicles],["Vacant",s.vacant],["Occupied",s.occupied],["Trips Today",s.trips_today],
+ ["Distance Today",`${s.distance_today} km`],["Fuel Used Today",`${s.fuel_today} L`],["Fuel Cost Today",money(s.cost_today)],["Trips This Month",s.trips_month]
+ ].map(x=>`<div class="fade rounded-3xl bg-white p-5 shadow-sm"><div class="text-sm text-slate-400">${x[0]}</div><div class="mt-2 text-2xl font-bold">${x[1]}</div></div>`).join("");
+ document.querySelector("#vehicles").innerHTML=r.vehicles.map(v=>`<div class="flex items-center justify-between rounded-2xl bg-slate-50 p-4"><div><div class="font-semibold">${esc(v.vehicle_name)}</div><div class="text-xs text-slate-400">${esc(v.plate_number)} • ${v.current_odo||0} km</div>${v.current_trip?`<div class="mt-1 text-xs text-slate-500">Driver: ${esc(v.current_trip.driver_name)} • ${esc(v.current_trip.destination)}</div>`:""}</div><span class="rounded-full px-3 py-1 text-xs font-bold ${v.status==="Vacant"?"bg-emerald-100 text-emerald-700":"bg-amber-100 text-amber-700"}">${v.status}</span></div>`).join("");
+ document.querySelector("#today").innerHTML=`<div class="flex justify-between rounded-2xl bg-slate-50 p-4"><span>Jarak tempuh</span><b>${s.distance_today} km</b></div><div class="flex justify-between rounded-2xl bg-slate-50 p-4"><span>BBM terpakai</span><b>${s.fuel_today} L</b></div><div class="flex justify-between rounded-2xl bg-slate-50 p-4"><span>Estimasi biaya BBM</span><b>${money(s.cost_today)}</b></div>`;
+ allTrips=r.recent_trips||[];filterTrips();
+}
+function filterTrips(){const q=(document.querySelector("#search").value||"").toLowerCase();document.querySelector("#trips").innerHTML=allTrips.filter(t=>[t.vehicle_name,t.plate_number,t.driver_name,t.destination].join(" ").toLowerCase().includes(q)).map(t=>`<tr class="border-b last:border-0"><td class="px-3 py-3 whitespace-nowrap">${esc(t.checkin_at||t.checkout_at)}</td><td class="px-3 py-3">${esc(t.vehicle_name)}<div class="text-xs text-slate-400">${esc(t.plate_number)}</div></td><td class="px-3 py-3">${esc(t.driver_name)}</td><td class="px-3 py-3">${esc(t.destination)}</td><td class="px-3 py-3">${t.distance_km} km</td><td class="px-3 py-3">${money(t.estimated_fuel_cost)}</td></tr>`).join("")}
+loadDashboard();
+</script></body></html>
