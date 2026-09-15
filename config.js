@@ -1,5 +1,6 @@
-// Ganti dengan URL Web App Google Apps Script setelah Deploy.
-// Contoh: https://script.google.com/macros/s/DEPLOYMENT_ID/exec
+
 window.FLEET_CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycbwlJCkYFx8pjxH9pynmqqIEqs0ikKvV9mSK7MAbOr1NsmSM2PqYIxRt7ppAowoAlqZt/exec"
+  API_URL: "https://script.google.com/macros/s/AKfycbzDRCIoFiLM6GdRN5eB0RmrYosYe5dcNBWzbRV4x97SSrRFJv0cAizHJOU3mBiEhwko/exec",
+  REQUEST_TIMEOUT_MS: 15000,
+  MAX_RETRIES: 2
 };
