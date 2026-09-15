@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Fleet Management - Swiss-Belhotel</title>
+<title>Fleet Management - Swiss-Belhotel Airport Yogyakarta</title>
 
-<!-- Swiss-Belhotel Favicon (SVG) -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23c8102e'/><path d='M28 25 H72 V37 H42 V44 H68 V56 H42 V63 H72 V75 H28 Z' fill='%23ffffff'/></svg>">
+<!-- Favicon Steering Wheel Only (SVG) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' stroke='%23dc2626' stroke-width='7' fill='%23090a0f'/><circle cx='50' cy='50' r='14' fill='%23dc2626'/><circle cx='50' cy='50' r='7' fill='%23ffffff'/><path d='M50 18 L50 36 M19 68 L38 57 M81 68 L62 57' stroke='%23ffffff' stroke-width='6' stroke-linecap='round'/></svg>">
 
 <!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
 :root {
@@ -64,7 +64,7 @@ button { cursor: pointer; border: none; }
 }
 
 .logo {
-  width: min(100%, 310px);
+  width: min(100%, 340px);
   height: auto;
   margin-bottom: 20px;
 }
@@ -290,13 +290,23 @@ button { cursor: pointer; border: none; }
 <body>
 <main class="wrap">
 <section id="gate" class="gate">
-  <!-- Swiss-Belhotel Logo SVG -->
+  <!-- Swiss-Belhotel Airport Yogyakarta SVG Logo -->
   <div class="logo">
-    <svg viewBox="0 0 420 120" width="100%" aria-label="Swiss-Belhotel International Logo">
-      <rect x="10" y="20" width="80" height="80" rx="16" fill="#c8102e"/>
-      <path d="M30 40 H70 V50 H45 V55 H65 V65 H45 V70 H70 V80 H30 Z" fill="#ffffff"/>
-      <text x="110" y="58" font-family="'Plus Jakarta Sans', sans-serif" font-size="22" font-weight="800" fill="#ffffff" letter-spacing="1">swiss-belhotel</text>
-      <text x="110" y="80" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="700" fill="#dc2626" letter-spacing="3">INTERNATIONAL</text>
+    <svg viewBox="0 0 420 120" width="100%" aria-label="Swiss-Belhotel Airport Yogyakarta">
+      <defs>
+        <linearGradient id="redGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#dc2626"/>
+          <stop offset="100%" stop-color="#991b1b"/>
+        </linearGradient>
+      </defs>
+      <!-- Badge Icon -->
+      <rect x="10" y="15" width="90" height="90" rx="22" fill="url(#redGrad)"/>
+      <text x="55" y="77" font-family="'Plus Jakarta Sans', sans-serif" font-size="52" font-weight="900" fill="#ffffff" text-anchor="middle">E</text>
+
+      <!-- Swiss-Belhotel Text -->
+      <text x="118" y="58" font-family="'Plus Jakarta Sans', sans-serif" font-size="27" font-weight="800" fill="#ffffff" letter-spacing="-0.5">swiss-belhotel</text>
+      <!-- Location Text -->
+      <text x="118" y="86" font-family="'Plus Jakarta Sans', sans-serif" font-size="15" font-weight="700" fill="#dc2626" letter-spacing="1.5">Swiss-Belhotel Airport Yogyakarta</text>
     </svg>
   </div>
 
@@ -338,7 +348,7 @@ button { cursor: pointer; border: none; }
   <div id="formArea"></div>
   <div id="appMsg" class="server"></div>
 
-  <div class="footer">Tech SBYO Project 2026</div>
+  <div class="footer">Fleet Management API v3</div>
 </section>
 </main>
 
@@ -355,24 +365,182 @@ button { cursor: pointer; border: none; }
 
 <script src="config.js"></script>
 <script>
-const CFG=window.FLEET_CONFIG||{};const API_URL=String(CFG.API_URL||'').replace(/\/$/,'');const TIMEOUT=Number(CFG.REQUEST_TIMEOUT_MS)||15000;const RETRIES=Number(CFG.MAX_RETRIES)||2;const params=new URLSearchParams(location.search);const plat=(params.get('plat')||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();let vehicle=null;const $=id=>document.getElementById(id);
+const CFG=window.FLEET_CONFIG||{};const API_URL=String(CFG.API_URL||'').replace(/\/$/,'');const TIMEOUT=Number(CFG.REQUEST_TIMEOUT_MS)||30000;const RETRIES=Number(CFG.MAX_RETRIES)||3;const params=new URLSearchParams(location.search);const plat=(params.get('plat')||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();let vehicle=null;const $=id=>document.getElementById(id);
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}function money(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n)||0)}function sleep(ms){return new Promise(r=>setTimeout(r,ms))}function rid(){return 'WEB-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8)}
-function formatOdoInput(el){let v=el.value.replace(/\D/g,'');el.value=v?Number(v).toLocaleString('id-ID'):'';}
-function parseOdoVal(v){return Number(String(v||'').replace(/\./g,'').replace(/,/g,'.'))}
 
-async function request(url,opts={},retryable=true){let lastErr;for(let attempt=0;attempt<=RETRIES;attempt++){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),TIMEOUT);try{const res=await fetch(url,Object.assign({},opts,{signal:controller.signal,cache:'no-store'}));const text=await res.text();let data;try{data=JSON.parse(text)}catch(_){throw new Error('Server returned non-JSON response. Check Apps Script deployment and /exec URL.')}if(!res.ok||!data.ok&&data.error_code==='SERVER_ERROR')throw new Error(data.message||('HTTP '+res.status));return data}catch(e){lastErr=e;if(attempt<RETRIES&&retryable){await sleep(500*(attempt+1))}}finally{clearTimeout(timer)}}throw lastErr||new Error('Failed to contact server.')}
+async function request(url,opts={},retryable=true){
+  let lastErr;
+  for(let attempt=0;attempt<=RETRIES;attempt++){
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(new Error('Connection timeout')),TIMEOUT);
+    try{
+      const res=await fetch(url,Object.assign({},opts,{signal:controller.signal,cache:'no-store'}));
+      const text=await res.text();
+      let data;
+      try{data=JSON.parse(text)}catch(_){throw new Error('Server returned non-JSON response. Check Apps Script deployment URL.')}
+      if(!res.ok||(!data.ok&&data.error_code==='SERVER_ERROR'))throw new Error(data.message||('HTTP '+res.status));
+      return data;
+    }catch(e){
+      let msg = e.message || '';
+      if(e.name === 'AbortError' || msg.includes('aborted') || msg.includes('timeout')){
+        msg = 'Connection timeout. Retrying server connection...';
+      }
+      lastErr = new Error(msg);
+      if(attempt<RETRIES&&retryable){
+        setMsg('Connecting to server (attempt '+(attempt+2)+')...', 'warning');
+        await sleep(1200*(attempt+1));
+      }
+    }finally{
+      clearTimeout(timer);
+    }
+  }
+  throw lastErr||new Error('Failed to contact server.');
+}
+
 function get(action,extra={}){const q=new URLSearchParams(Object.assign({action,request_id:rid(),_t:Date.now()},extra));return request(API_URL+'?'+q.toString(),{},true)}
 function post(payload){const body=Object.assign({},payload,{request_id:payload.request_id||rid()});return request(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(body)},true)}
 function setMsg(text,type=''){const el=$('serverMsg');el.textContent=text;el.className='server '+type}function appMsg(text,type=''){const el=$('appMsg');el.textContent=text;el.className='server '+type}
-async function init(){if(!API_URL||API_URL.includes('PASTE_')){setMsg('API is not configured. Fill API_URL in config.js.','warning');$('vehicleLabel').textContent='Configuration incomplete';return}if(!plat){$('vehicleLabel').textContent='Open the page via vehicle QR with plate parameter.';$('pin').disabled=true;setMsg('Example: index.html?plat=B1234ABC','warning');return}try{const h=await get('health');if(!h.ok)throw Error(h.message);setMsg('Server online • '+new Date(h.server_time).toLocaleTimeString('en-US'));const r=await get('vehicle',{plat});if(!r.ok)throw Error(r.message);vehicle=r.vehicle;$('vehicleLabel').textContent=vehicle.vehicle_name+' • '+vehicle.plate_number}catch(e){$('vehicleLabel').textContent='Cannot load vehicle';setMsg(e.message,'error');$('pin').disabled=true}}
-$('pin').addEventListener('input',async e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4);if(e.target.value.length!==4)return;if(!plat)return;setMsg('');$('pinMsg').textContent='Validating PIN...';try{const r=await post({action:'validatePin',plat,pin:e.target.value});if(!r.valid){e.target.value='';$('pinMsg').textContent='Incorrect PIN.';$('pinMsg').className='muted';setMsg('Invalid PIN.','error');return}$('gate').classList.add('hidden');$('app').classList.remove('hidden');loadStatus()}catch(err){e.target.value='';$('pinMsg').textContent='Enter 4 digits to continue';setMsg('Failed to contact server: '+err.message,'error')}});$('refreshBtn').onclick=()=>loadStatus();
-async function loadStatus(){ $('loading').classList.remove('hidden');$('statusCard').classList.add('hidden');$('formArea').innerHTML='';appMsg('');try{const r=await get('status',{plat});if(!r.ok)throw Error(r.message);vehicle=r.vehicle;$('vehicleName').textContent=vehicle.vehicle_name;$('plate').textContent=vehicle.plate_number;const cls=vehicle.status==='Vacant'?'vacant':'occupied';$('statusCard').innerHTML='<div class="row"><b style="font-size:15px">Vehicle Status</b><span class="pill '+cls+'">'+esc(vehicle.status)+'</span></div><div class="grid2" style="margin-top:14px"><div class="stat"><span class="muted">Odometer</span><b>'+Number(vehicle.current_odo||0).toLocaleString('id-ID')+' km</b></div><div class="stat"><span class="muted">Fuel Ratio</span><b>'+vehicle.fuel_ratio+' km/L</b></div></div>';$('statusCard').classList.remove('hidden');vehicle.status==='Vacant'?renderCheckout():renderCheckin()}catch(e){$('formArea').innerHTML='<div class="error">'+esc(e.message)+'</div>'}finally{$('loading').classList.add('hidden')}}
+
+async function init(){
+  if(!API_URL||API_URL.includes('PASTE_')){
+    setMsg('API is not configured. Fill API_URL in config.js.','warning');
+    $('vehicleLabel').textContent='Configuration incomplete';
+    return;
+  }
+  if(!plat){
+    $('vehicleLabel').textContent='Open the page via vehicle QR with plate parameter.';
+    $('pin').disabled=true;
+    setMsg('Example: index.html?plat=B1234ABC','warning');
+    return;
+  }
+  try{
+    const h=await get('health');
+    if(!h.ok)throw Error(h.message);
+    setMsg('Server online • '+new Date(h.server_time).toLocaleTimeString('en-US'));
+    const r=await get('vehicle',{plat});
+    if(!r.ok)throw Error(r.message);
+    vehicle=r.vehicle;
+    $('vehicleLabel').textContent=vehicle.vehicle_name+' • '+vehicle.plate_number;
+    $('pin').disabled=false;
+  }catch(e){
+    $('vehicleLabel').textContent='Vehicle loaded (Retry PIN if needed)';
+    setMsg(e.message,'error');
+    $('pin').disabled=false;
+  }
+}
+
+$('pin').addEventListener('input',async e=>{
+  e.target.value=e.target.value.replace(/\D/g,'').slice(0,4);
+  if(e.target.value.length!==4)return;
+  if(!plat)return;
+  setMsg('');
+  $('pinMsg').textContent='Validating PIN...';
+  try{
+    const r=await post({action:'validatePin',plat,pin:e.target.value});
+    if(!r.valid){
+      e.target.value='';
+      $('pinMsg').textContent='Incorrect PIN.';
+      $('pinMsg').className='muted';
+      setMsg('Invalid PIN.','error');
+      return;
+    }
+    $('gate').classList.add('hidden');
+    $('app').classList.remove('hidden');
+    loadStatus();
+  }catch(err){
+    e.target.value='';
+    $('pinMsg').textContent='Enter 4 digits to continue';
+    setMsg('Failed to contact server: '+err.message,'error');
+  }
+});
+
+$('refreshBtn').onclick=()=>loadStatus();
+
+async function loadStatus(){ 
+  $('loading').classList.remove('hidden');
+  $('statusCard').classList.add('hidden');
+  $('formArea').innerHTML='';
+  appMsg('');
+  try{
+    const r=await get('status',{plat});
+    if(!r.ok)throw Error(r.message);
+    vehicle=r.vehicle;
+    $('vehicleName').textContent=vehicle.vehicle_name;
+    $('plate').textContent=vehicle.plate_number;
+    const cls=vehicle.status==='Vacant'?'vacant':'occupied';
+    $('statusCard').innerHTML='<div class="row"><b style="font-size:15px">Vehicle Status</b><span class="pill '+cls+'">'+esc(vehicle.status)+'</span></div><div class="grid2" style="margin-top:14px"><div class="stat"><span class="muted">Odometer</span><b>'+Number(vehicle.current_odo||0).toLocaleString('id-ID')+' km</b></div><div class="stat"><span class="muted">Fuel Ratio</span><b>'+vehicle.fuel_ratio+' km/L</b></div></div>';
+    $('statusCard').classList.remove('hidden');
+    vehicle.status==='Vacant'?renderCheckout():renderCheckin();
+  }catch(e){
+    $('formArea').innerHTML='<div class="error">'+esc(e.message)+'</div>';
+  }finally{
+    $('loading').classList.add('hidden');
+  }
+}
+
 function field(id,label,type='text',attrs=''){return '<div class="field"><label class="label" for="'+id+'">'+label+'</label><input id="'+id+'" type="'+type+'" '+attrs+'></div>'}
-function renderCheckout(){$('formArea').innerHTML='<div class="card"><h3 style="margin:0;font-size:19px;font-weight:800;color:#fff">Check-Out / Start</h3><p class="muted" style="margin-top:4px;margin-bottom:18px">Fill in trip details before the vehicle is used.</p><form id="checkoutForm" class="form">'+field('driver','Driver Name')+'<div class="field"><label class="label" for="dept">Department</label><select id="dept" required><option value="" disabled selected>Select Department...</option><option value="Front Office">Front Office</option><option value="House Keeping">House Keeping</option><option value="Accounting">Accounting</option><option value="Executive Office">Executive Office</option><option value="HR &amp; Security">HR &amp; Security</option><option value="Sales &amp; Marketing">Sales &amp; Marketing</option><option value="Engineering">Engineering</option><option value="FBS">FBS</option><option value="FBP">FBP</option></select></div>'+field('destination','Destination')+'<div class="field"><label class="label">Purpose</label><textarea id="purpose" rows="3"></textarea></div>'+field('odoStart','Start Odo','text','inputmode="numeric" placeholder="e.g. 1.000.000" oninput="formatOdoInput(this)"')+'<button class="primary">Start Trip</button></form></div>';$('checkoutForm').onsubmit=e=>{e.preventDefault();checkout()}}
-async function checkout(){const payload={action:'checkout',plat,driver_name:$('driver').value.trim(),department:$('dept').value.trim(),destination:$('destination').value.trim(),purpose:$('purpose').value.trim(),odo_start:parseOdoVal($('odoStart').value),request_id:rid()};if(!payload.driver_name||!payload.department||!payload.destination||!payload.purpose||!Number.isFinite(payload.odo_start)){appMsg('Complete all fields.','error');return}const btn=document.querySelector('#checkoutForm button');btn.disabled=true;btn.textContent='Saving...';try{const r=await post(payload);if(!r.ok)throw Error(r.message);appMsg('Check-Out successful.','success');await loadStatus()}catch(e){appMsg('Check-Out failed: '+e.message,'error');btn.disabled=false;btn.textContent='Start Trip'}}
-function renderCheckin(){const trip=vehicle.current_trip||{};$('formArea').innerHTML='<div class="card"><h3 style="margin:0;font-size:19px;font-weight:800;color:#fff">Check-In / Finish</h3><p class="muted" style="margin-top:4px;margin-bottom:18px">Enter final odometer to finish the trip.</p><div class="stat" style="margin:15px 0">Driver: <b>'+esc(trip.driver_name||'-')+'</b>Start Odo: <b>'+Number(trip.odo_start||0).toLocaleString('id-ID')+' km</b></div><form id="checkinForm">'+field('odoEnd','End Odo','text','inputmode="numeric" placeholder="e.g. 1.000.000" oninput="formatOdoInput(this)"')+'<button class="primary">Finish Trip</button></form></div>';$('checkinForm').onsubmit=e=>{e.preventDefault();checkin()}}
-async function checkin(){const odoEnd=parseOdoVal($('odoEnd').value),start=Number(vehicle.current_trip?.odo_start||0);if(!Number.isFinite(odoEnd)||odoEnd<start){appMsg('End Odo must be ≥ '+start.toLocaleString('id-ID')+'.','error');return}const btn=document.querySelector('#checkinForm button');btn.disabled=true;btn.textContent='Calculating...';try{const r=await post({action:'checkin',plat,odo_end:odoEnd,request_id:rid()});if(!r.ok)throw Error(r.message);showSummary(r.trip);await loadStatus()}catch(e){appMsg('Check-In failed: '+e.message,'error');btn.disabled=false;btn.textContent='Finish Trip'}}
-function showSummary(t){$('summary').innerHTML=[['Driver',t.driver_name],['Destination',t.destination],['Distance',(Number(t.distance_km)||0)+' km'],['Fuel',(Number(t.fuel_used_liter)||0)+' L'],['Fuel Price',money(t.fuel_price)],['Estimated Cost',money(t.estimated_fuel_cost)]].map(x=>'<div><small>'+esc(x[0])+'</small><b>'+esc(x[1])+'</b></div>').join('');$('modal').classList.remove('hidden')}function closeModal(){$('modal').classList.add('hidden')}init();
+
+function renderCheckout(){
+  $('formArea').innerHTML='<div class="card"><h3 style="margin:0;font-size:19px;font-weight:800;color:#fff">Check-Out / Start</h3><p class="muted" style="margin-top:4px;margin-bottom:18px">Fill in trip details before the vehicle is used.</p><form id="checkoutForm" class="form">'+field('driver','Driver Name')+'<div class="field"><label class="label" for="dept">Department</label><select id="dept" required><option value="" disabled selected>Select Department...</option><option value="Front Office">Front Office</option><option value="House Keeping">House Keeping</option><option value="Accounting">Accounting</option><option value="Executive Office">Executive Office</option><option value="HR &amp; Security">HR &amp; Security</option><option value="Sales &amp; Marketing">Sales &amp; Marketing</option><option value="Engineering">Engineering</option><option value="FBS">FBS</option><option value="FBP">FBP</option></select></div>'+field('destination','Destination')+'<div class="field"><label class="label">Purpose</label><textarea id="purpose" rows="3"></textarea></div>'+field('odoStart','Start Odo','number','min="0" step="0.1" inputmode="decimal"')+'<button class="primary">Start Trip</button></form></div>';
+  $('checkoutForm').onsubmit=e=>{e.preventDefault();checkout()};
+}
+
+async function checkout(){
+  const payload={action:'checkout',plat,driver_name:$('driver').value.trim(),department:$('dept').value.trim(),destination:$('destination').value.trim(),purpose:$('purpose').value.trim(),odo_start:Number($('odoStart').value),request_id:rid()};
+  if(!payload.driver_name||!payload.department||!payload.destination||!payload.purpose||!Number.isFinite(payload.odo_start)){
+    appMsg('Complete all fields.','error');
+    return;
+  }
+  const btn=document.querySelector('#checkoutForm button');
+  btn.disabled=true;
+  btn.textContent='Saving...';
+  try{
+    const r=await post(payload);
+    if(!r.ok)throw Error(r.message);
+    appMsg('Check-Out successful.','success');
+    await loadStatus();
+  }catch(e){
+    appMsg('Check-Out failed: '+e.message,'error');
+    btn.disabled=false;
+    btn.textContent='Start Trip';
+  }
+}
+
+function renderCheckin(){
+  const trip=vehicle.current_trip||{};
+  $('formArea').innerHTML='<div class="card"><h3 style="margin:0;font-size:19px;font-weight:800;color:#fff">Check-In / Finish</h3><p class="muted" style="margin-top:4px;margin-bottom:18px">Enter final odometer to finish the trip.</p><div class="stat" style="margin:15px 0">Driver: <b>'+esc(trip.driver_name||'-')+'</b>Start Odo: <b>'+Number(trip.odo_start||0).toLocaleString('id-ID')+' km</b></div><form id="checkinForm">'+field('odoEnd','End Odo','number','min="'+Number(trip.odo_start||0)+'" step="0.1" inputmode="decimal"')+'<button class="primary">Finish Trip</button></form></div>';
+  $('checkinForm').onsubmit=e=>{e.preventDefault();checkin()};
+}
+
+async function checkin(){
+  const odoEnd=Number($('odoEnd').value),start=Number(vehicle.current_trip?.odo_start||0);
+  if(!Number.isFinite(odoEnd)||odoEnd<start){
+    appMsg('End Odo must be ≥ '+start+'.','error');
+    return;
+  }
+  const btn=document.querySelector('#checkinForm button');
+  btn.disabled=true;
+  btn.textContent='Calculating...';
+  try{
+    const r=await post({action:'checkin',plat,odo_end:odoEnd,request_id:rid()});
+    if(!r.ok)throw Error(r.message);
+    showSummary(r.trip);
+    await loadStatus();
+  }catch(e){
+    appMsg('Check-In failed: '+e.message,'error');
+    btn.disabled=false;
+    btn.textContent='Finish Trip';
+  }
+}
+
+function showSummary(t){
+  $('summary').innerHTML=[['Driver',t.driver_name],['Destination',t.destination],['Distance',(Number(t.distance_km)||0)+' km'],['Fuel',(Number(t.fuel_used_liter)||0)+' L'],['Fuel Price',money(t.fuel_price)],['Estimated Cost',money(t.estimated_fuel_cost)]].map(x=>'<div><small>'+esc(x[0])+'</small><b>'+esc(x[1])+'</b></div>').join('');
+  $('modal').classList.remove('hidden');
+}
+
+function closeModal(){$('modal').classList.add('hidden')}
+
+init();
 </script>
 </body>
 </html>
