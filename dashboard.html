@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Fleet Dashboard</title>
 
-<!-- Favicon -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<!-- Favicon (Matching index.html Red Fleet SVG Icon) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230b0f17'/><path d='M20 55 L30 35 C32 30 38 28 45 28 L55 28 C62 28 68 30 70 35 L80 55 L85 55 C88 55 90 57 90 60 L90 70 C90 72 88 74 85 74 L80 74 C80 80 75 85 68 85 C61 85 56 80 56 74 L44 74 C44 80 39 85 32 85 C25 85 20 80 20 74 L15 74 C12 74 10 72 10 70 L10 60 C10 57 12 55 15 55 Z' fill='%23ef4444'/><circle cx='32' cy='74' r='4' fill='%23ffffff'/><circle cx='68' cy='74' r='4' fill='%23ffffff'/></svg>">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
@@ -25,7 +25,7 @@
   <div>
     <p class="text-xs font-bold uppercase tracking-widest text-red-500">Fleet Vehicle</p>
     <h1 class="text-3xl font-bold text-white">Fleet Dashboard</h1>
-    <p class="mt-1 text-sm text-slate-400">Monitoring kendaraan dan log perjalanan secara real-time.</p>
+    <p class="mt-1 text-sm text-slate-400">Real-time vehicle monitoring and trip logs.</p>
   </div>
   <button onclick="loadDashboard()" class="flex items-center gap-2 rounded-2xl bg-[#161d2a] border border-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-200 shadow-md hover:bg-[#1f293a] transition">
     <span>↻</span> Refresh
@@ -37,7 +37,7 @@
 <!-- KPI Cards -->
 <section id="kpis" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"></section>
 
-<!-- Middle Section: Vehicle Status & Today Summary -->
+<!-- Middle Section: Vehicle Status & Today's Summary -->
 <section class="mt-6 grid gap-6 lg:grid-cols-2">
   <div class="rounded-3xl border border-slate-800/80 bg-[#131926] p-5 shadow-xl">
     <div class="mb-4 flex items-center justify-between">
@@ -55,14 +55,14 @@
   </div>
 </section>
 
-<!-- Recent Trips Table dengan Sortable Headers -->
+<!-- Recent Trips Table with Sortable Headers -->
 <section class="mt-6 rounded-3xl border border-slate-800/80 bg-[#131926] p-5 shadow-xl">
   <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
     <div>
       <h2 class="text-lg font-bold text-white">Recent Trip Logs</h2>
-      <p class="text-xs text-slate-400 mt-0.5">Klik judul kolom untuk mengurutkan (sort) data.</p>
+      <p class="text-xs text-slate-400 mt-0.5">Click column headers to sort data.</p>
     </div>
-    <input id="search" oninput="filterTrips()" placeholder="Cari driver / kendaraan..." class="w-full sm:w-64 rounded-2xl border border-slate-800 bg-[#0b0f17] px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition">
+    <input id="search" oninput="filterTrips()" placeholder="Search driver / vehicle..." class="w-full sm:w-64 rounded-2xl border border-slate-800 bg-[#0b0f17] px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition">
   </div>
 
   <div class="overflow-x-auto">
@@ -151,15 +151,15 @@ function render(r){
 
   document.querySelector("#today").innerHTML = `
     <div class="flex justify-between items-center rounded-2xl bg-[#0b0f17] border border-slate-800/60 p-4 text-sm">
-      <span class="text-slate-400">Jarak tempuh</span>
+      <span class="text-slate-400">Distance Traveled</span>
       <b class="text-white">${s.distance_today} km</b>
     </div>
     <div class="flex justify-between items-center rounded-2xl bg-[#0b0f17] border border-slate-800/60 p-4 text-sm">
-      <span class="text-slate-400">BBM terpakai</span>
+      <span class="text-slate-400">Fuel Consumed</span>
       <b class="text-white">${s.fuel_today} L</b>
     </div>
     <div class="flex justify-between items-center rounded-2xl bg-[#0b0f17] border border-slate-800/60 p-4 text-sm">
-      <span class="text-slate-400">Estimasi biaya BBM</span>
+      <span class="text-slate-400">Est. Fuel Cost</span>
       <b class="text-emerald-400">${money(s.cost_today)}</b>
     </div>
   `;
@@ -168,7 +168,7 @@ function render(r){
   filterTrips();
 }
 
-// Fungsi Sortir Kolom
+// Column Sorting Logic
 function sortTable(key){
   if(sortKey === key){
     sortAsc = !sortAsc;
@@ -199,12 +199,12 @@ function updateSortIcons(){
 function filterTrips(){
   const q = (document.querySelector("#search").value || "").toLowerCase();
   
-  // 1. Filtering Search
+  // 1. Search Filtering
   let filtered = allTrips.filter(t => 
     [t.vehicle_name, t.plate_number, t.driver_name, t.destination].join(" ").toLowerCase().includes(q)
   );
 
-  // 2. Sorting Data
+  // 2. Multi-Field Alphabetical/Numeric Sorting
   filtered.sort((a, b) => {
     let valA, valB;
     switch(sortKey) {
