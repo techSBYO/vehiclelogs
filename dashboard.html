@@ -86,7 +86,6 @@
       
       <select id="dept-filter" onchange="filterTrips()" class="rounded-xl border border-slate-800 bg-[#0b0f17] px-3 py-2 text-sm text-slate-100 focus:border-red-500 focus:outline-none transition">
         <option value="all">All Departments</option>
-        <!-- Options will be injected here -->
       </select>
 
       <input id="search" oninput="filterTrips()" placeholder="Search logs..." class="w-full sm:w-48 rounded-xl border border-slate-800 bg-[#0b0f17] px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition">
@@ -107,6 +106,14 @@
         </tr>
       </thead>
       <tbody id="trips" class="divide-y divide-slate-800/60"></tbody>
+      <!-- SUMMARY FOOTER ADDED HERE -->
+      <tfoot class="border-t-2 border-slate-700 bg-[#0f141e]">
+        <tr>
+          <td colspan="5" class="px-3 py-4 text-right text-sm font-bold text-slate-300 uppercase tracking-wider">Filtered Total:</td>
+          <td id="total-distance" class="px-3 py-4 text-sm font-bold text-white font-mono">0 km</td>
+          <td id="total-cost" class="px-3 py-4 text-sm font-bold text-emerald-400 font-mono">Rp 0</td>
+        </tr>
+      </tfoot>
     </table>
   </div>
 </section>
@@ -130,7 +137,6 @@ function esc(v){
 }
 
 async function get(action){
-  // Fallback Dummy Data to test if API fails or is empty
   const r = await fetch(`${API_URL}?action=${action}`).catch(() => ({ ok: false }));
   if(r && typeof r.json === 'function') return r.json();
   return { ok: false, message: 'Network error or URL empty' };
@@ -183,7 +189,6 @@ function render(r){
 
   allTrips = r.recent_trips || [];
 
-  // Populate Department Dropdown automatically based on retrieved data
   const uniqueDepts = [...new Set(allTrips.map(t => t.department || 'General'))].sort();
   document.querySelector("#dept-filter").innerHTML = '<option value="all">All Departments</option>' + 
     uniqueDepts.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join("");
@@ -227,14 +232,9 @@ function filterTrips(){
   // 1. Multi-Filter Logic
   let filtered = allTrips.filter(t => {
     const tDept = t.department || 'General';
-    
-    // Search match
     const matchSearch = [t.vehicle_name, t.plate_number, t.driver_name, t.destination, tDept].join(" ").toLowerCase().includes(q);
-    
-    // Dept match
     const matchDept = (deptFilter === 'all') || (tDept === deptFilter);
     
-    // Date match
     let matchDate = true;
     if(startDate || endDate){
       const tripDateObj = new Date(t.checkin_at || t.checkout_at || 0);
@@ -245,10 +245,9 @@ function filterTrips(){
     return matchSearch && matchDept && matchDate;
   });
 
-  // 2. Update Statistics Chart based on Filtered Data
   drawChart(filtered);
 
-  // 3. Sorting Data
+  // 2. Sorting Data
   filtered.sort((a, b) => {
     let valA, valB;
     switch(sortKey) {
@@ -288,7 +287,7 @@ function filterTrips(){
     return 0;
   });
 
-  // 4. Render Table HTML
+  // 3. Render Table HTML
   document.querySelector("#trips").innerHTML = filtered.length > 0 ? filtered.map(t => `
     <tr class="hover:bg-slate-800/30 transition">
       <td class="px-3 py-3.5 whitespace-nowrap text-slate-300">${esc(t.checkin_at || t.checkout_at)}</td>
@@ -303,13 +302,24 @@ function filterTrips(){
       <td class="px-3 py-3.5 text-emerald-400 font-mono font-medium">${money(t.estimated_fuel_cost)}</td>
     </tr>
   `).join("") : `<tr><td colspan="7" class="py-6 text-center text-slate-500">No trips found.</td></tr>`;
+
+  // 4. Calculate & Render Totals at the bottom
+  let totalDistance = 0;
+  let totalCost = 0;
+
+  filtered.forEach(t => {
+    totalDistance += Number(t.distance_km) || 0;
+    totalCost += Number(t.estimated_fuel_cost) || 0;
+  });
+
+  document.querySelector("#total-distance").textContent = totalDistance.toLocaleString('id-ID') + " km";
+  document.querySelector("#total-cost").textContent = money(totalCost);
 }
 
 function drawChart(data){
   const ctx = document.getElementById('usageChart');
   if(!ctx) return;
   
-  // Aggregate distances by department
   const deptTotals = {};
   data.forEach(t => {
     const d = t.department || 'General';
