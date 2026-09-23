@@ -5,16 +5,24 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Fleet Dashboard</title>
 
-<!-- Favicon (Matching index.html Red Fleet SVG Icon) -->
+<!-- Favicon -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230b0f17'/><path d='M20 55 L30 35 C32 30 38 28 45 28 L55 28 C62 28 68 30 70 35 L80 55 L85 55 C88 55 90 57 90 60 L90 70 C90 72 88 74 85 74 L80 74 C80 80 75 85 68 85 C61 85 56 80 56 74 L44 74 C44 80 39 85 32 85 C25 85 20 80 20 74 L15 74 C12 74 10 72 10 70 L10 60 C10 57 12 55 15 55 Z' fill='%23ef4444'/><circle cx='32' cy='74' r='4' fill='%23ffffff'/><circle cx='68' cy='74' r='4' fill='%23ffffff'/></svg>">
 
+<!-- Tailwind & Chart.js -->
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
   body { background-color: #0b0f17; color: #f1f5f9; }
   .fade { animation: f .35s ease both; }
   @keyframes f { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   .th-sort { cursor: pointer; user-select: none; transition: color 0.2s; }
   .th-sort:hover { color: #ef4444; }
+  /* Custom scrollbar for table */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0b0f17; }
+  ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #334155; }
 </style>
 </head>
 <body class="min-h-screen font-sans text-slate-100 antialiased">
@@ -37,32 +45,52 @@
 <!-- KPI Cards -->
 <section id="kpis" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"></section>
 
-<!-- Middle Section: Vehicle Status & Today's Summary -->
-<section class="mt-6 grid gap-6 lg:grid-cols-2">
-  <div class="rounded-3xl border border-slate-800/80 bg-[#131926] p-5 shadow-xl">
+<!-- Middle Section: Vehicle Status & Usage Stats -->
+<section class="mt-6 grid gap-6 lg:grid-cols-3">
+  <!-- Status -->
+  <div class="rounded-3xl border border-slate-800/80 bg-[#131926] p-5 shadow-xl lg:col-span-1">
     <div class="mb-4 flex items-center justify-between">
       <h2 class="text-lg font-bold text-white">Vehicle Status</h2>
       <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
         <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Live
       </span>
     </div>
-    <div id="vehicles" class="space-y-3"></div>
+    <div id="vehicles" class="space-y-3 max-h-[300px] overflow-y-auto pr-2"></div>
   </div>
 
-  <div class="rounded-3xl border border-slate-800/80 bg-[#131926] p-5 shadow-xl">
-    <h2 class="mb-4 text-lg font-bold text-white">Today's Summary</h2>
-    <div id="today" class="space-y-3"></div>
+  <!-- Graphic Statistic -->
+  <div class="rounded-3xl border border-slate-800/80 bg-[#131926] p-5 shadow-xl lg:col-span-2 flex flex-col">
+    <h2 class="mb-4 text-lg font-bold text-white">Distance by Department (km)</h2>
+    <div class="relative flex-grow min-h-[250px] w-full">
+      <canvas id="usageChart"></canvas>
+    </div>
   </div>
 </section>
 
-<!-- Recent Trips Table with Sortable Headers -->
+<!-- Recent Trips Table & Filters -->
 <section class="mt-6 rounded-3xl border border-slate-800/80 bg-[#131926] p-5 shadow-xl">
-  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+  
+  <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
     <div>
       <h2 class="text-lg font-bold text-white">Recent Trip Logs</h2>
-      <p class="text-xs text-slate-400 mt-0.5">Click column headers to sort data.</p>
+      <p class="text-xs text-slate-400 mt-0.5">Filter and sort your fleet data.</p>
     </div>
-    <input id="search" oninput="filterTrips()" placeholder="Search driver / vehicle..." class="w-full sm:w-64 rounded-2xl border border-slate-800 bg-[#0b0f17] px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition">
+    
+    <!-- Filtering Tools -->
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="flex items-center gap-2">
+        <input type="date" id="start-date" onchange="filterTrips()" class="rounded-xl border border-slate-800 bg-[#0b0f17] px-3 py-2 text-sm text-slate-100 focus:border-red-500 focus:outline-none transition" title="Start Date">
+        <span class="text-slate-500 text-sm">to</span>
+        <input type="date" id="end-date" onchange="filterTrips()" class="rounded-xl border border-slate-800 bg-[#0b0f17] px-3 py-2 text-sm text-slate-100 focus:border-red-500 focus:outline-none transition" title="End Date">
+      </div>
+      
+      <select id="dept-filter" onchange="filterTrips()" class="rounded-xl border border-slate-800 bg-[#0b0f17] px-3 py-2 text-sm text-slate-100 focus:border-red-500 focus:outline-none transition">
+        <option value="all">All Departments</option>
+        <!-- Options will be injected here -->
+      </select>
+
+      <input id="search" oninput="filterTrips()" placeholder="Search logs..." class="w-full sm:w-48 rounded-xl border border-slate-800 bg-[#0b0f17] px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition">
+    </div>
   </div>
 
   <div class="overflow-x-auto">
@@ -72,6 +100,7 @@
           <th onclick="sortTable('date')" class="th-sort px-3 py-3">Date <span id="sort-icon-date">↕</span></th>
           <th onclick="sortTable('vehicle')" class="th-sort px-3 py-3">Vehicle <span id="sort-icon-vehicle">↕</span></th>
           <th onclick="sortTable('driver')" class="th-sort px-3 py-3">Driver <span id="sort-icon-driver">↕</span></th>
+          <th onclick="sortTable('department')" class="th-sort px-3 py-3 text-red-400">Department <span id="sort-icon-department">↕</span></th>
           <th onclick="sortTable('destination')" class="th-sort px-3 py-3">Destination <span id="sort-icon-destination">↕</span></th>
           <th onclick="sortTable('distance')" class="th-sort px-3 py-3">Distance <span id="sort-icon-distance">↕</span></th>
           <th onclick="sortTable('cost')" class="th-sort px-3 py-3">Fuel Cost <span id="sort-icon-cost">↕</span></th>
@@ -90,6 +119,7 @@ const API_URL = window.FLEET_CONFIG?.API_URL || "";
 let allTrips = [];
 let sortKey = 'date';
 let sortAsc = false;
+let chartInstance = null;
 
 function money(n){
   return new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(Number(n)||0);
@@ -100,14 +130,16 @@ function esc(v){
 }
 
 async function get(action){
-  const r = await fetch(`${API_URL}?action=${action}`);
-  return r.json();
+  // Fallback Dummy Data to test if API fails or is empty
+  const r = await fetch(`${API_URL}?action=${action}`).catch(() => ({ ok: false }));
+  if(r && typeof r.json === 'function') return r.json();
+  return { ok: false, message: 'Network error or URL empty' };
 }
 
 async function loadDashboard(){
   try{
     const r = await get("dashboard");
-    if(!r.ok) throw Error(r.message);
+    if(!r.ok) throw Error(r.message || "Failed to load data.");
     render(r);
   }catch(e){
     document.querySelector("#message").innerHTML = `<div class="mb-5 rounded-2xl bg-red-950/40 border border-red-800/60 p-4 text-red-300 text-sm">${esc(e.message)}</div>`;
@@ -115,16 +147,16 @@ async function loadDashboard(){
 }
 
 function render(r){
-  const s = r.summary;
+  const s = r.summary || {};
   document.querySelector("#kpis").innerHTML = [
-    ["Total Vehicles", s.total_vehicles],
-    ["Vacant", s.vacant],
-    ["Occupied", s.occupied],
-    ["Trips Today", s.trips_today],
-    ["Distance Today", `${s.distance_today} km`],
-    ["Fuel Used Today", `${s.fuel_today} L`],
+    ["Total Vehicles", s.total_vehicles || 0],
+    ["Vacant", s.vacant || 0],
+    ["Occupied", s.occupied || 0],
+    ["Trips Today", s.trips_today || 0],
+    ["Distance Today", `${s.distance_today || 0} km`],
+    ["Fuel Used Today", `${s.fuel_today || 0} L`],
     ["Fuel Cost Today", money(s.cost_today)],
-    ["Trips This Month", s.trips_month]
+    ["Trips This Month", s.trips_month || 0]
   ].map(x => `
     <div class="fade rounded-3xl border border-slate-800/80 bg-[#131926] p-5 shadow-xl">
       <div class="text-xs font-medium uppercase tracking-wider text-slate-400">${x[0]}</div>
@@ -132,12 +164,12 @@ function render(r){
     </div>
   `).join("");
 
-  document.querySelector("#vehicles").innerHTML = r.vehicles.map(v => `
+  document.querySelector("#vehicles").innerHTML = (r.vehicles || []).map(v => `
     <div class="flex items-center justify-between rounded-2xl bg-[#0b0f17] border border-slate-800/60 p-4">
       <div>
         <div class="font-semibold text-slate-100">${esc(v.vehicle_name)}</div>
         <div class="text-xs text-slate-400">${esc(v.plate_number)} • ${v.current_odo||0} km</div>
-        ${v.current_trip ? `<div class="mt-1 text-xs text-slate-400">Driver: <span class="text-slate-200">${esc(v.current_trip.driver_name)}</span> • ${esc(v.current_trip.destination)}</div>` : ""}
+        ${v.current_trip ? `<div class="mt-1 text-xs text-slate-400">Driver: <span class="text-slate-200">${esc(v.current_trip.driver_name)}</span> •${esc(v.current_trip.destination)}</div>` : ""}
       </div>
       <span class="rounded-full px-3 py-1 text-xs font-bold border ${
         v.status === "Vacant" 
@@ -149,26 +181,16 @@ function render(r){
     </div>
   `).join("");
 
-  document.querySelector("#today").innerHTML = `
-    <div class="flex justify-between items-center rounded-2xl bg-[#0b0f17] border border-slate-800/60 p-4 text-sm">
-      <span class="text-slate-400">Distance Traveled</span>
-      <b class="text-white">${s.distance_today} km</b>
-    </div>
-    <div class="flex justify-between items-center rounded-2xl bg-[#0b0f17] border border-slate-800/60 p-4 text-sm">
-      <span class="text-slate-400">Fuel Consumed</span>
-      <b class="text-white">${s.fuel_today} L</b>
-    </div>
-    <div class="flex justify-between items-center rounded-2xl bg-[#0b0f17] border border-slate-800/60 p-4 text-sm">
-      <span class="text-slate-400">Est. Fuel Cost</span>
-      <b class="text-emerald-400">${money(s.cost_today)}</b>
-    </div>
-  `;
-
   allTrips = r.recent_trips || [];
+
+  // Populate Department Dropdown automatically based on retrieved data
+  const uniqueDepts = [...new Set(allTrips.map(t => t.department || 'General'))].sort();
+  document.querySelector("#dept-filter").innerHTML = '<option value="all">All Departments</option>' + 
+    uniqueDepts.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join("");
+
   filterTrips();
 }
 
-// Column Sorting Logic
 function sortTable(key){
   if(sortKey === key){
     sortAsc = !sortAsc;
@@ -181,7 +203,7 @@ function sortTable(key){
 }
 
 function updateSortIcons(){
-  const keys = ['date', 'vehicle', 'driver', 'destination', 'distance', 'cost'];
+  const keys = ['date', 'vehicle', 'driver', 'department', 'destination', 'distance', 'cost'];
   keys.forEach(k => {
     const el = document.querySelector(`#sort-icon-${k}`);
     if(el){
@@ -198,13 +220,35 @@ function updateSortIcons(){
 
 function filterTrips(){
   const q = (document.querySelector("#search").value || "").toLowerCase();
+  const startDate = document.querySelector("#start-date").value;
+  const endDate = document.querySelector("#end-date").value;
+  const deptFilter = document.querySelector("#dept-filter").value;
   
-  // 1. Search Filtering
-  let filtered = allTrips.filter(t => 
-    [t.vehicle_name, t.plate_number, t.driver_name, t.destination].join(" ").toLowerCase().includes(q)
-  );
+  // 1. Multi-Filter Logic
+  let filtered = allTrips.filter(t => {
+    const tDept = t.department || 'General';
+    
+    // Search match
+    const matchSearch = [t.vehicle_name, t.plate_number, t.driver_name, t.destination, tDept].join(" ").toLowerCase().includes(q);
+    
+    // Dept match
+    const matchDept = (deptFilter === 'all') || (tDept === deptFilter);
+    
+    // Date match
+    let matchDate = true;
+    if(startDate || endDate){
+      const tripDateObj = new Date(t.checkin_at || t.checkout_at || 0);
+      if(startDate && tripDateObj < new Date(startDate)) matchDate = false;
+      if(endDate && tripDateObj > new Date(endDate + "T23:59:59")) matchDate = false;
+    }
 
-  // 2. Multi-Field Alphabetical/Numeric Sorting
+    return matchSearch && matchDept && matchDate;
+  });
+
+  // 2. Update Statistics Chart based on Filtered Data
+  drawChart(filtered);
+
+  // 3. Sorting Data
   filtered.sort((a, b) => {
     let valA, valB;
     switch(sortKey) {
@@ -219,6 +263,10 @@ function filterTrips(){
       case 'driver':
         valA = (a.driver_name || "").toLowerCase();
         valB = (b.driver_name || "").toLowerCase();
+        break;
+      case 'department':
+        valA = (a.department || "General").toLowerCase();
+        valB = (b.department || "General").toLowerCase();
         break;
       case 'destination':
         valA = (a.destination || "").toLowerCase();
@@ -235,14 +283,13 @@ function filterTrips(){
       default:
         valA = 0; valB = 0;
     }
-
     if(valA < valB) return sortAsc ? -1 : 1;
     if(valA > valB) return sortAsc ? 1 : -1;
     return 0;
   });
 
-  // 3. Render HTML
-  document.querySelector("#trips").innerHTML = filtered.map(t => `
+  // 4. Render Table HTML
+  document.querySelector("#trips").innerHTML = filtered.length > 0 ? filtered.map(t => `
     <tr class="hover:bg-slate-800/30 transition">
       <td class="px-3 py-3.5 whitespace-nowrap text-slate-300">${esc(t.checkin_at || t.checkout_at)}</td>
       <td class="px-3 py-3.5">
@@ -250,11 +297,69 @@ function filterTrips(){
         <div class="text-xs text-slate-500">${esc(t.plate_number)}</div>
       </td>
       <td class="px-3 py-3.5 text-slate-200">${esc(t.driver_name)}</td>
+      <td class="px-3 py-3.5 text-slate-400 text-xs font-semibold uppercase tracking-wider">${esc(t.department || 'General')}</td>
       <td class="px-3 py-3.5 text-slate-200">${esc(t.destination)}</td>
       <td class="px-3 py-3.5 text-slate-200 font-mono">${t.distance_km} km</td>
       <td class="px-3 py-3.5 text-emerald-400 font-mono font-medium">${money(t.estimated_fuel_cost)}</td>
     </tr>
-  `).join("");
+  `).join("") : `<tr><td colspan="7" class="py-6 text-center text-slate-500">No trips found.</td></tr>`;
+}
+
+function drawChart(data){
+  const ctx = document.getElementById('usageChart');
+  if(!ctx) return;
+  
+  // Aggregate distances by department
+  const deptTotals = {};
+  data.forEach(t => {
+    const d = t.department || 'General';
+    if(!deptTotals[d]) deptTotals[d] = 0;
+    deptTotals[d] += Number(t.distance_km) || 0;
+  });
+
+  const labels = Object.keys(deptTotals);
+  const values = Object.values(deptTotals);
+
+  if(chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Total Distance (km)',
+        data: values,
+        backgroundColor: '#ef4444',
+        borderRadius: 6,
+        barPercentage: 0.6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e293b',
+          titleColor: '#f8fafc',
+          bodyColor: '#cbd5e1',
+          padding: 10,
+          cornerRadius: 8
+        }
+      },
+      scales: {
+        y: { 
+          beginAtZero: true,
+          grid: { color: '#1e293b' },
+          ticks: { color: '#64748b', font: { family: 'sans-serif' } }
+        },
+        x: { 
+          grid: { display: false },
+          ticks: { color: '#94a3b8', font: { family: 'sans-serif', weight: '600' } }
+        }
+      }
+    }
+  });
 }
 
 loadDashboard();
