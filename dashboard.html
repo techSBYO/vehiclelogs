@@ -1,4 +1,4 @@
-n<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -32,7 +32,7 @@ n<!doctype html>
 <header class="mb-7 flex flex-wrap items-center justify-between gap-4">
   <div>
     <p class="text-xs font-bold uppercase tracking-widest text-red-500">Fleet Vehicle</p>
-    <h1 class="text-3xl font-bold text-white">Fleet Dashboard</h1>
+    <h1 class="text-3xl font-bold text-white">SBYO Fleet Dashboard</h1>
     <p class="mt-1 text-sm text-slate-400">Real-time vehicle monitoring and trip logs.</p>
   </div>
   <button onclick="loadDashboard()" class="flex items-center gap-2 rounded-2xl bg-[#161d2a] border border-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-200 shadow-md hover:bg-[#1f293a] transition">
@@ -117,6 +117,11 @@ n<!doctype html>
     </table>
   </div>
 </section>
+
+<!-- Copyright Footer -->
+<footer class="mt-10 border-t border-slate-800/60 pt-6 pb-2 text-center text-xs text-slate-500">
+  &copy; 2026 Swiss-Belhotel Airport Yogyakarta (SBYO). Created by Tasrul Baharisman. All rights reserved.
+</footer>
 
 </div>
 
@@ -356,17 +361,17 @@ function drawChart(data){
           padding: 10,
           cornerRadius: 8
         }
+      }
+    },
+    scales: {
+      y: { 
+        beginAtZero: true,
+        grid: { color: '#1e293b' },
+        ticks: { color: '#64748b', font: { family: 'sans-serif' } }
       },
-      scales: {
-        y: { 
-          beginAtZero: true,
-          grid: { color: '#1e293b' },
-          ticks: { color: '#64748b', font: { family: 'sans-serif' } }
-        },
-        x: { 
-          grid: { display: false },
-          ticks: { color: '#94a3b8', font: { family: 'sans-serif', weight: '600' } }
-        }
+      x: { 
+        grid: { display: false },
+        ticks: { color: '#94a3b8', font: { family: 'sans-serif', weight: '600' } }
       }
     }
   });
